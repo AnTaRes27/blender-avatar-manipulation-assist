@@ -12,3 +12,4 @@ honestly, as it stands right now, this tool isnt meant for the general public an
 
 ## roadmap
  - generate shapekeys to hide clothes
+ - whiskers attachers
