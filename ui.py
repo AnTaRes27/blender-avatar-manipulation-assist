@@ -245,7 +245,20 @@ class NTRZ_PT_vertgroup_manip(bpy.types.Panel):
 
         rows=2
         row = layout.row()
-        row.template_list('NTRZ_UL_vertgroup_list', '', scene, 'NTRZ_shapekey_move_shapekey_list', scene, 'NTRZ_shapekey_move_shapekey_list_index', rows=rows)
+        row.template_list('NTRZ_UL_vertgroup_list', '', scene, 'NTRZ_vertgroup_manip_list', scene, 'NTRZ_vertgroup_manip_list_index', rows=rows)
+
+        col = row.column(align=True)
+        col.operator('ntrz.vertgroup_manip_list_actions', icon='ADD', text='').action = 'ADD'
+        col.operator('ntrz.vertgroup_manip_list_actions', icon='BACK', text='').action = 'INSERT'
+        col.operator('ntrz.vertgroup_manip_list_actions', icon='REMOVE', text='').action = 'REMOVE'
+        col.separator()
+        col.operator('ntrz.vertgroup_manip_list_actions', icon='TRIA_UP', text='').action = 'UP'
+        col.operator('ntrz.vertgroup_manip_list_actions', icon='TRIA_DOWN', text='').action = 'DOWN'
+        col.separator()
+        col.operator('ntrz.vertgroup_manip_clear_list', icon='PANEL_CLOSE', text='')
+
+        row = layout.row()
+        row.operator('ntrz.vertgroup_manip_list_remove_duplicates', icon="FORCE_VORTEX")
 
 class NTRZ_UL_vertgroup_list(bpy.types.UIList):
     """displays UI List of vertex group to manipulate

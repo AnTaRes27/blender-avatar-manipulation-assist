@@ -718,12 +718,12 @@ def register():
         type=NTRZ_PG_vertgroup_manip_settings  
     )
 
-    Scene.NTRZ_vertgroup_list = CollectionProperty(
+    Scene.NTRZ_vertgroup_manip_list = CollectionProperty(
         name='Shapekey Move List',
         type=NTRZ_PG_vertgroup_manip_list
     )
 
-    Scene.NTRZ_vertgroup_list_index = IntProperty(
+    Scene.NTRZ_vertgroup_manip_list_index = IntProperty(
         name='Shapekey Move List Index'
     )
 
