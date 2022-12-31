@@ -40,7 +40,7 @@ class NTRZ_PG_vertgroup_manip_list(bpy.types.PropertyGroup):
     """
     #name: StringProperty() -> instantiated by default
     obj_type: bpy.props.StringProperty()
-    vertgroup_index: bpy.props.IntProperty()
+    index: bpy.props.IntProperty()
 
 
 class NTRZ_OT_vertgroup_manip_list_bulk_add_actions(bpy.types.Operator):
@@ -76,57 +76,59 @@ class NTRZ_OT_vertgroup_manip_list_bulk_add_actions(bpy.types.Operator):
 
         match self.action:
             case 'SET_START':
-                scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index = bpy.context.object.active_shape_key_index
+                scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index = context.object.vertex_groups.active_index
             case 'SET_END':
-                scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index = bpy.context.object.active_shape_key_index
+                scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index = context.object.vertex_groups.active_index
             case 'BULK_ADD_INDEXES':
-                for shapekey_index in range(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index, scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index+1):
-                    shapekey_name = context.object.data.shape_keys.key_blocks[shapekey_index].name
+                for vertgroup_index in range(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index, scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index+1):
+                    vertgroup_name = context.object.vertex_groups[vertgroup_index].name
+                    print('adding %s' % vertgroup_name)
                     item = scene.NTRZ_vertgroup_manip_list.add()
-                    item.name = shapekey_name
+                    item.name = vertgroup_name
                     item.obj_type = 'STRING'
-                    item.vertgroup_index = shapekey_index
+                    item.index = vertgroup_index
                     scene.NTRZ_vertgroup_manip_list_index = len(scene.NTRZ_vertgroup_manip_list)-1
             case 'BULK_INSERT_INDEXES':
-                for shapekey_index in reversed(range(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index, scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index)):
-                    shapekey_name = context.object.data.shape_keys.key_blocks[shapekey_index].name
+                for vertgroup_index in reversed(range(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index, scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index+1)):
+                    vertgroup_name = context.object.vertex_groups[vertgroup_index].name
+                    print('adding %s' % vertgroup_name)
                     item = scene.NTRZ_vertgroup_manip_list.add()
-                    item.name = shapekey_name
+                    item.name = vertgroup_name
                     item.obj_type = 'STRING'
-                    item.vertgroup_index = shapekey_index
+                    item.index = vertgroup_index
                     scene.NTRZ_vertgroup_manip_list.move(len(scene.NTRZ_vertgroup_manip_list)-1, scene.NTRZ_vertgroup_manip_list_index)
                 scene.NTRZ_vertgroup_manip_list_index += scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index - scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index - 1
             case 'BULK_ADD_REGEX':
                 import re
                 text_regex = scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_regex
-                match_shapekeys = []
-                for x in range(1,len(bpy.context.object.data.shape_keys.key_blocks)):
-                    shapekey_name = bpy.context.object.data.shape_keys.key_blocks[x].name
-                    if re.search(text_regex, shapekey_name, re.IGNORECASE):
-                        match_shapekeys.append(x)
+                match_vertgroups = []
+                for x in range(0,len(bpy.context.object.vertex_groups)):
+                    vertgroup_name = bpy.context.object.vertex_groups[x].name
+                    if re.search(text_regex, vertgroup_name, re.IGNORECASE):
+                        match_vertgroups.append(x)
 
-                for shapekey_index in match_shapekeys:
+                for vertgroup_index in match_vertgroups:
                     item = scene.NTRZ_vertgroup_manip_list.add()
-                    item.name = context.object.data.shape_keys.key_blocks[shapekey_index].name
+                    item.name = context.object.vertex_groups[vertgroup_index].name
                     item.obj_type = 'STRING'
-                    item.vertgroup_index = shapekey_index
+                    item.index = vertgroup_index
                 scene.NTRZ_vertgroup_manip_list_index = len(scene.NTRZ_vertgroup_manip_list)-1
             case 'BULK_INSERT_REGEX':
                 import re
                 text_regex = scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_regex
-                match_shapekeys = []
-                for x in range(1,len(bpy.context.object.data.shape_keys.key_blocks)):
-                    shapekey_name = bpy.context.object.data.shape_keys.key_blocks[x].name
-                    if re.search(text_regex, shapekey_name, re.IGNORECASE):
-                        match_shapekeys.append(x)
+                match_vertgroups = []
+                for x in range(0,len(bpy.context.object.vertex_groups)):
+                    vertgroup_name = bpy.context.object.vertex_groups[x].name
+                    if re.search(text_regex, vertgroup_name, re.IGNORECASE):
+                        match_vertgroups.append(x)
 
-                for shapekey_index in reversed(match_shapekeys):
+                for vertgroup_index in reversed(match_vertgroups):
                     item = scene.NTRZ_vertgroup_manip_list.add()
-                    item.name = context.object.data.shape_keys.key_blocks[shapekey_index].name
+                    item.name = context.object.vertex_groups[vertgroup_index].name
                     item.obj_type = 'STRING'
-                    item.vertgroup_index = shapekey_index
+                    item.index = vertgroup_index
                     scene.NTRZ_vertgroup_manip_list.move(len(scene.NTRZ_vertgroup_manip_list)-1, scene.NTRZ_vertgroup_manip_list_index)
-                scene.NTRZ_vertgroup_manip_list_index += len(match_shapekeys) - 1
+                scene.NTRZ_vertgroup_manip_list_index += len(match_vertgroups) - 1
             case _:
                 pass
         return {'FINISHED'}
@@ -142,7 +144,7 @@ class NTRZ_OT_vertgroup_manip_list_actions(bpy.types.Operator):
             -INSERT: same as above but inserts it above the active selection in vertgroup_manip_list
     """
     bl_idname = 'ntrz.vertgroup_manip_list_actions'
-    bl_label = 'Shapekey List Actions'
+    bl_label = 'Vertgroup List Actions'
     bl_description = ''
     bl_options = {"REGISTER", "UNDO"}
 
@@ -185,13 +187,13 @@ class NTRZ_OT_vertgroup_manip_list_actions(bpy.types.Operator):
                 self.report({'INFO'}, info)
 
         if self.action == 'ADD' or self.action == 'INSERT':
-            if context.object.vertex_groups.active_index:
+            if context.object.vertex_groups.active_index >= 0:
                 active_vertgroup_index = context.object.vertex_groups.active_index
                 active_vertgroup_name = context.object.vertex_groups[active_vertgroup_index].name
                 item = scene.NTRZ_vertgroup_manip_list.add()
                 item.name = active_vertgroup_name
                 item.obj_type = 'STRING'
-                item.vertgroup_index = active_vertgroup_index
+                item.index = active_vertgroup_index
                 if self.action == 'ADD':
                     scene.NTRZ_vertgroup_manip_list_index = len(scene.NTRZ_vertgroup_manip_list)-1
                 else:

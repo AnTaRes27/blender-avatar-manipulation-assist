@@ -243,6 +243,37 @@ class NTRZ_PT_vertgroup_manip(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
+        col = layout.column()
+        row = col.row()
+        split = row.split(factor=0.2)
+        col = split.column()
+        col.label(text='By Index')
+        split = split.split()
+        row = split.row(align=True)
+        # row.alignment = 'RIGHT'
+        row.label(text='from: ')
+        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='TRACKING_BACKWARDS_SINGLE', text='').action = 'SET_START'
+        row.label(text=str(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index))
+        row.separator()
+        row.label(text='to: ')
+        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='TRACKING_FORWARDS_SINGLE', text='').action = 'SET_END'
+        row.label(text=str(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index))
+        row.separator()
+        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='ADD', text='').action = 'BULK_ADD_INDEXES'
+        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='BACK', text='').action = 'BULK_INSERT_INDEXES'
+
+        col = layout.column()
+        row = col.row()
+        split = row.split(factor=0.2)
+        col = split.column()
+        col.label(text='By PyRegEx')
+        split = split.split()
+        row = split.row(align=True)
+        # row = layout.row(align=True)
+        row.prop(scene.NTRZ_vertgroup_manip_settings, 'vertgroup_manip_regex', text='')
+        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='ADD', text='').action = 'BULK_ADD_REGEX'
+        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='BACK', text='').action = 'BULK_INSERT_REGEX'
+
         rows=2
         row = layout.row()
         row.template_list('NTRZ_UL_vertgroup_list', '', scene, 'NTRZ_vertgroup_manip_list', scene, 'NTRZ_vertgroup_manip_list_index', rows=rows)
@@ -276,7 +307,7 @@ class NTRZ_UL_vertgroup_list(bpy.types.UIList):
         split = layout.split(factor=0.2)
         # split.prop(item, 'obj_id', text='', emboss=False, icon_value=icon)
         # split.prop(item, 'name', text='', emboss=False, icon_value=icon)
-        split.label(text=str(item.vertgroup_index))
+        split.label(text=str(item.index))
         split.label(text=item.name)
         # split.enabled = False
         # layout.prop(item, 'name', text='', emboss=False, icon_value=icon)
