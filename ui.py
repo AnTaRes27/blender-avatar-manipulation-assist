@@ -228,6 +228,53 @@ class NTRZ_UL_breathing_shapekey_list(bpy.types.UIList):
 #////////////////////////////////////////////////#
 #////////////////////////////////////////////////#
 
+class NTRZ_PT_vertgroup_manip(bpy.types.Panel):
+    """displays functions related to manipulating vertex groups
+    attr:
+            [TODO insert attributes]
+    """
+    bl_idname = 'NTRZ_PT_vertgroup_manip'
+    bl_label = 'Vertex Weight Manipulator'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'NTRZ'
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        rows=2
+        row = layout.row()
+        row.template_list('NTRZ_UL_vertgroup_list', '', scene, 'NTRZ_shapekey_move_shapekey_list', scene, 'NTRZ_shapekey_move_shapekey_list_index', rows=rows)
+
+class NTRZ_UL_vertgroup_list(bpy.types.UIList):
+    """displays UI List of vertex group to manipulate
+    attr:
+            [TODO insert attributes]
+    """
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        # if self.layout_type in {'DEFAULT', 'COMPACT'}:
+        #   split = layout.split(factor=0.3)
+        #   split.label(text="Index: %d" % (index))
+        #   split.label(text=item.name) #avoid renaming item by accident
+        # elif self.layout_type in {'GRID'}:
+        #   layout.alignment = 'CENTER'
+        #   layout.label(text='')
+        split = layout.split(factor=0.2)
+        # split.prop(item, 'obj_id', text='', emboss=False, icon_value=icon)
+        # split.prop(item, 'name', text='', emboss=False, icon_value=icon)
+        split.label(text=str(item.vertgroup_index))
+        split.label(text=item.name)
+        # split.enabled = False
+        # layout.prop(item, 'name', text='', emboss=False, icon_value=icon)
+
+    def invoke(self, context, event):
+        pass
+
+
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
+
 class NTRZ_PT_housekeeping(bpy.types.Panel):
     """displays functions related to housekeeping
     attr:

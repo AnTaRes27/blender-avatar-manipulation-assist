@@ -1,4 +1,4 @@
-"""/// ANTARES AVATAR MANIUPLATION ASSIST v0.1.0 //////////////////////////////
+"""/// ANTARES AVATAR MANIUPLATION ASSIST v0.2.0 //////////////////////////////
  ///
 //    HELLO!
 //
@@ -9,7 +9,7 @@
 bl_info = {
     'name' : 'Antares Avatar Manipulation Assist',
     'author' : 'Antares Husky',
-    'version' : (0, 1, 0),
+    'version' : (0, 2, 0),
     'blender' : (3, 3, 1),
     'location': 'View3D > NTRZ',
     'warning': 'I may or may not know what I\'m doing',
@@ -21,7 +21,7 @@ import bpy
 
 from .housekeeping import *
 from .ui import *
-
+from .vertgroup_manip import *
 
 #////////////////////////////////////////////////#
 
@@ -635,6 +635,14 @@ classes = (
         NTRZ_OT_breathing_shapekey_transfer,
         NTRZ_PT_housekeeping,
         NTRZ_OT_housekeeping_actions,
+        NTRZ_PT_vertgroup_manip,
+        NTRZ_UL_vertgroup_list,
+        NTRZ_PG_vertgroup_manip_settings,
+        NTRZ_PG_vertgroup_manip_list,
+        NTRZ_OT_vertgroup_manip_list_bulk_add_actions,
+        NTRZ_OT_vertgroup_manip_list_actions,
+        NTRZ_OT_vertgroup_manip_clear_list,
+        NTRZ_OT_vertgroup_manip_list_remove_duplicates,
     )
 
 def register():
@@ -706,6 +714,19 @@ def register():
         name='Shapekey Move List Index'
     )
 
+    Scene.NTRZ_vertgroup_manip_settings = PointerProperty(
+        type=NTRZ_PG_vertgroup_manip_settings  
+    )
+
+    Scene.NTRZ_vertgroup_list = CollectionProperty(
+        name='Shapekey Move List',
+        type=NTRZ_PG_vertgroup_manip_list
+    )
+
+    Scene.NTRZ_vertgroup_list_index = IntProperty(
+        name='Shapekey Move List Index'
+    )
+
 def unregister():
     from bpy.utils import unregister_class
     for cls in reversed(classes):
@@ -730,6 +751,7 @@ def unregister():
             Scene.NTRZ_breathing_assist,
             Scene.NTRZ_breathing_shapekey_list,
             Scene.NTRZ_breathing_shapekey_list_index,
+
         )
     for prop in properties:
         del prop
