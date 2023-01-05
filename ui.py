@@ -243,6 +243,7 @@ class NTRZ_PT_vertgroup_manip(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
+        #bulk add actions
         col = layout.column()
         row = col.row()
         split = row.split(factor=0.2)
@@ -274,10 +275,12 @@ class NTRZ_PT_vertgroup_manip(bpy.types.Panel):
         row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='ADD', text='').action = 'BULK_ADD_REGEX'
         row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='BACK', text='').action = 'BULK_INSERT_REGEX'
 
+        #vertgroup list
         rows=2
         row = layout.row()
         row.template_list('NTRZ_UL_vertgroup_list', '', scene, 'NTRZ_vertgroup_manip_list', scene, 'NTRZ_vertgroup_manip_list_index', rows=rows)
 
+        #vertgroup list actions
         col = row.column(align=True)
         col.operator('ntrz.vertgroup_manip_list_actions', icon='ADD', text='').action = 'ADD'
         col.operator('ntrz.vertgroup_manip_list_actions', icon='BACK', text='').action = 'INSERT'
@@ -288,8 +291,23 @@ class NTRZ_PT_vertgroup_manip(bpy.types.Panel):
         col.separator()
         col.operator('ntrz.vertgroup_manip_clear_list', icon='PANEL_CLOSE', text='')
 
+        #actions on vertgroup list
         row = layout.row()
         row.operator('ntrz.vertgroup_manip_list_remove_duplicates', icon="FORCE_VORTEX")
+
+        #vertgroup duplicate and rename
+        row = layout.row()
+        row.separator()
+        row.alignment = 'CENTER'
+        row.prop(scene.NTRZ_vertgroup_manip_settings, 'vertgroup_manip_rename_prefix', text='')
+        row.label(text='[NAME]')
+        row.prop(scene.NTRZ_vertgroup_manip_settings, 'vertgroup_manip_rename_suffix', text='')
+        
+        row=layout.row()
+        row.operator('ntrz.vertgroup_manip_duplicate_and_rename')
+
+        row=layout.row()
+        row.operator('ntrz.vertgroup_manip_remove_zero_weight_vertgroup')
 
 class NTRZ_UL_vertgroup_list(bpy.types.UIList):
     """displays UI List of vertex group to manipulate

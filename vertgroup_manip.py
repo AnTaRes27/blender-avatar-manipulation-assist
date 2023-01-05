@@ -27,7 +27,21 @@ class NTRZ_PG_vertgroup_manip_settings(bpy.types.PropertyGroup):
     )
 
     vertgroup_manip_regex: bpy.props.StringProperty(
-        name='Vertex Group Manipulation Regex Text'
+        name='Vertex Group Manipulation Regex Text',
+        default='.*'
+    )
+
+    vertgroup_manip_rename_prefix: bpy.props.StringProperty(
+        name='Vertex Group Manipulation Rename Prefix Text',
+        default='DEF-'
+    )
+
+    vertgroup_manip_rename_suffix: bpy.props.StringProperty(
+        name='Vertex Group Manipulation Rename Suffix Text'
+    )
+
+    vertgroup_manip_exclusion_regex: bpy.props.StringProperty(
+        name='Vertex Group Manipulation Exclusion Regex Text'
     )
 
 class NTRZ_PG_vertgroup_manip_list(bpy.types.PropertyGroup):
@@ -259,3 +273,103 @@ class NTRZ_OT_vertgroup_manip_list_remove_duplicates(bpy.types.Operator):
 
     def invoke(self, context, event):
         return context.window_manager.invoke_confirm(self, event)
+
+class NTRZ_OT_vertgroup_manip_duplicate_and_rename(bpy.types.Operator):
+    """ OPERATOR: duplicates vertgroups on the list and renames them according to pyregex
+    attr:
+        > None
+    """
+    bl_idname = 'ntrz.vertgroup_manip_duplicate_and_rename'
+    bl_label = 'Duplicate to New Name'
+    bl_description = ''
+    bl_options = {"INTERNAL", "UNDO"}
+
+    def execute(self, context):
+        scene = context.scene
+        # index = scene.NTRZ_vertgroup_manip_list_index
+
+        rename_text_prefix = str(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_rename_prefix)
+        rename_text_suffix = str(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_rename_suffix)
+
+        # try:
+        #     item = scene.NTRZ_vertgroup_manip_list[0] #check if there is something at all
+        # except IndexError:
+        #     info = 'List is empty. Nothing to manipulate.'
+        #     self.report({'INFO'}, info)
+        # else:
+        
+        # Get the active object
+        obj = bpy.context.active_object
+        # Iterate through the vertex groups in the object
+        for vgroup in bpy.context.active_object.vertex_groups:
+            # Check if the vertex group name does not start with desired prefix
+            if not (vgroup.name.startswith(rename_text_prefix) and vgroup.name.endswith(rename_text_suffix)):
+                try:
+                    obj.vertex_groups.remove(obj.vertex_groups.get(rename_text_prefix+vgroup.name+rename_text_suffix))
+                except:
+                    print('cant find ' + rename_text_prefix+vgroup.name+rename_text_suffix)
+                bpy.ops.object.vertex_group_set_active(group=vgroup.name)
+                bpy.ops.object.vertex_group_copy()
+                obj.vertex_groups.active.name = rename_text_prefix+vgroup.name+rename_text_suffix
+                print('created %s' % obj.vertex_groups.active.name)
+            
+        # Update the object
+        obj.update_from_editmode()
+        
+        return {'FINISHED'}
+
+class NTRZ_OT_vertgroup_manip_remove_zero_weight_vertgroup(bpy.types.Operator):
+    """ OPERATOR: removes vertex groups with no weights in any of the object's vertices
+    attr:
+        > None
+    """
+    bl_idname = 'ntrz.vertgroup_manip_remove_zero_weight_vertgroup'
+    bl_label = 'Remove Zero Weight Vertex Groups'
+    bl_description = ''
+    bl_options = {"INTERNAL", "UNDO"}
+
+    def execute(self, context):
+        scene = context.scene
+        # index = scene.NTRZ_vertgroup_manip_list_index
+
+        exclusion_text_regex = str(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_exclusion_regex)
+
+        # Get the active object
+        obj = bpy.context.active_object
+        if obj == None:
+            info = 'Nothing is selected. Is object hidden?'
+            print(info, end='\n\n')
+            self.report({'INFO'}, info)
+            return {'CANCELLED'}
+        else:
+            print('processing %s:' % obj.name)
+
+        # import re
+        # for vgroup in obj.vertex_groups:
+        #     if not re.search(exclusion_text_regex, vgroup.name, re.IGNORECASE):
+        #         for vert in obj.data.vertices:
+
+
+        vgroup_indexes = [vgroup_index for vgroup_index in range(len(obj.vertex_groups))]
+        for vert in obj.data.vertices:
+            for vgroup in vert.groups:
+                if vgroup.group in vgroup_indexes:
+                    vgroup_indexes.remove(vgroup.group)
+        print('%d duplicates found.' % len(vgroup_indexes))
+
+        count_removed = 0
+        for vgroup_index in reversed(vgroup_indexes):
+            print('removing %s...' % obj.vertex_groups[vgroup_index].name, end='')
+            try:
+                obj.vertex_groups.remove(obj.vertex_groups[vgroup_index])
+            except:
+                print('error')
+            else:
+                count_removed += 1
+                print('ok')
+
+        info = '%d vertex groups removed.' % (count_removed)
+        print(info, end='\n\n')
+        self.report({'INFO'}, info)
+
+        return {'FINISHED'}
