@@ -385,17 +385,17 @@ class NTRZ_OT_vertgroup_manip_remove_zero_weight_vertgroup(bpy.types.Operator):
             print('processing %s:' % obj.name)
 
         # import re
-        # for vgroup in obj.vertex_groups:
+        # for vgroup in obj.vgroups:
         #     if not re.search(exclusion_text_regex, vgroup.name, re.IGNORECASE):
         #         for vert in obj.data.vertices:
 
-
-        vgroup_indexes = [vgroup_index for vgroup_index in range(len(obj.vertex_groups))]
+        vgroups = get_filtered_vgroups()
+        vgroup_indexes = [vgroup.index for vgroup in vgroups]
         for vert in obj.data.vertices:
             for vgroup in vert.groups:
                 if vgroup.group in vgroup_indexes:
                     vgroup_indexes.remove(vgroup.group)
-        print('%d duplicates found.' % len(vgroup_indexes))
+        print('%d empty vertex group(s) found.' % len(vgroup_indexes))
 
         count_removed = 0
         for vgroup_index in reversed(vgroup_indexes):
@@ -408,7 +408,7 @@ class NTRZ_OT_vertgroup_manip_remove_zero_weight_vertgroup(bpy.types.Operator):
                 count_removed += 1
                 print('ok')
 
-        info = '%d vertex groups removed.' % (count_removed)
+        info = '%d vertex group(s) removed.' % (count_removed)
         print(info, end='\n\n')
         self.report({'INFO'}, info)
 
