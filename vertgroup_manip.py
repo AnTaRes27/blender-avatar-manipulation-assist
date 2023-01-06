@@ -65,6 +65,24 @@ class NTRZ_PG_vertgroup_manip_list(bpy.types.PropertyGroup):
     obj_type: bpy.props.StringProperty()
     index: bpy.props.IntProperty()
 
+def get_filtered_vgroups():
+    context = bpy.context
+    scene = context.scene
+    if scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'ALL':
+        vgroups = bpy.context.active_object.vertex_groups
+    elif scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'INCLUSION':
+        vgroups = []
+        whitelist = [vgroup.name for vgroup in context.scene.NTRZ_vertgroup_manip_list]
+        for vgroup in bpy.context.active_object.vertex_groups:
+            if vgroup.name in whitelist:
+                vgroups.append(vgroup)
+    elif scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'EXCLUSION':
+        vgroups = []
+        blacklist = [vgroup.name for vgroup in context.scene.NTRZ_vertgroup_manip_list]
+        for vgroup in bpy.context.active_object.vertex_groups:
+            if vgroup.name not in blacklist:
+                vgroups.append(vgroup)
+    return vgroups
 
 class NTRZ_OT_vertgroup_manip_list_bulk_add_actions(bpy.types.Operator):
     """ OPERATOR: holds actions related to bulk add vertex groups
@@ -319,22 +337,8 @@ class NTRZ_OT_vertgroup_manip_duplicate_and_rename(bpy.types.Operator):
         # Get the active object
         obj = bpy.context.active_object
 
-        # vgroups = bpy.context.active_object.vertex_groups
-        if scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'ALL':
-            vgroups = bpy.context.active_object.vertex_groups
-        elif scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'INCLUSION':
-            vgroups = []
-            whitelist = [vgroup.name for vgroup in context.scene.NTRZ_vertgroup_manip_list]
-            for vgroup in bpy.context.active_object.vertex_groups:
-                if vgroup.name in whitelist:
-                    vgroups.append(vgroup)
-        elif scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'EXCLUSION':
-            vgroups = []
-            blacklist = [vgroup.name for vgroup in context.scene.NTRZ_vertgroup_manip_list]
-            for vgroup in bpy.context.active_object.vertex_groups:
-                if vgroup.name not in blacklist:
-                    vgroups.append(vgroup)
-
+        # create list of vgroups
+        vgroups = get_filtered_vgroups()
 
         # Iterate through the vertex groups in the object
         for vgroup in vgroups:
