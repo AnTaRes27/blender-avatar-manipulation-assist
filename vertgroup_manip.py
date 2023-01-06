@@ -427,6 +427,12 @@ class NTRZ_OT_vertgroup_manip_transfer_vertex_weight(bpy.types.Operator):
     def execute(self, context):
         scene = context.scene
 
-        bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='VGROUP_WEIGHTS', use_max_distance=True, max_distance=0.001, layers_select_src='NAME', layers_select_dst='ALL')
+        if scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'ALL':
+            bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='VGROUP_WEIGHTS', use_max_distance=True, max_distance=0.001, layers_select_src='NAME', layers_select_dst='ALL')
+        elif scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'INCLUSION' or scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'EXCLUSION':
+            vgroups = get_filtered_vgroups()
+            info = 'Filtered vertex weight transfer is unsupported at the moment.'
+            print(info, end='\n\n')
+            self.report({'INFO'}, info)
 
         return {'FINISHED'}
