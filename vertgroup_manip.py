@@ -307,10 +307,37 @@ class NTRZ_OT_vertgroup_manip_duplicate_and_rename(bpy.types.Operator):
         #     self.report({'INFO'}, info)
         # else:
         
+    # vertgroup_manip_selector: bpy.props.EnumProperty(
+    #     name='Vertex Group to Manipulate',
+    #     items=(
+    #         ('ALL', 'All', ''),
+    #         ('INCLUSION', 'Including Listed', ''),
+    #         ('EXCLUSION', 'Excluding Listed', '')
+    #     )
+    # )
+
         # Get the active object
         obj = bpy.context.active_object
+
+        # vgroups = bpy.context.active_object.vertex_groups
+        if scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'ALL':
+            vgroups = bpy.context.active_object.vertex_groups
+        elif scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'INCLUSION':
+            vgroups = []
+            whitelist = [vgroup.name for vgroup in context.scene.NTRZ_vertgroup_manip_list]
+            for vgroup in bpy.context.active_object.vertex_groups:
+                if vgroup.name in whitelist:
+                    vgroups.append(vgroup)
+        elif scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'EXCLUSION':
+            vgroups = []
+            blacklist = [vgroup.name for vgroup in context.scene.NTRZ_vertgroup_manip_list]
+            for vgroup in bpy.context.active_object.vertex_groups:
+                if vgroup.name not in blacklist:
+                    vgroups.append(vgroup)
+
+
         # Iterate through the vertex groups in the object
-        for vgroup in bpy.context.active_object.vertex_groups:
+        for vgroup in vgroups:
             # Check if the vertex group name does not start with desired prefix
             if not (vgroup.name.startswith(rename_text_prefix) and vgroup.name.endswith(rename_text_suffix)):
                 try:
