@@ -16,6 +16,15 @@ class NTRZ_PG_vertgroup_manip_settings(bpy.types.PropertyGroup):
             -vertgroup_manip_end_index: end index on the vertex group panel
             -vertgroup_manip_regex: regex text for searching vertex group
     """
+    vertgroup_manip_selector: bpy.props.EnumProperty(
+        name='Vertex Group to Manipulate',
+        items=(
+            ('ALL', 'All', ''),
+            ('INCLUSION', 'Including Listed', ''),
+            ('EXCLUSION', 'Excluding Listed', '')
+        )
+    )
+
     vertgroup_manip_start_index: bpy.props.IntProperty(
         name='Vertex Group Manipulation Start Index',
         default=0
@@ -371,5 +380,22 @@ class NTRZ_OT_vertgroup_manip_remove_zero_weight_vertgroup(bpy.types.Operator):
         info = '%d vertex groups removed.' % (count_removed)
         print(info, end='\n\n')
         self.report({'INFO'}, info)
+
+        return {'FINISHED'}
+
+class NTRZ_OT_vertgroup_manip_transfer_vertex_weight(bpy.types.Operator):
+    """ OPERATOR: transfer vertex weights from all selected object to active object
+    attr:
+        > None
+    """
+    bl_idname = 'ntrz.vertgroup_manip_transfer_vertex_weight'
+    bl_label = 'Transfer Vertex Weight to Active Object'
+    bl_description = ''
+    bl_options = {"INTERNAL", "UNDO"}
+
+    def execute(self, context):
+        scene = context.scene
+
+        bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='VGROUP_WEIGHTS', use_max_distance=True, max_distance=0.001, layers_select_src='NAME', layers_select_dst='ALL')
 
         return {'FINISHED'}

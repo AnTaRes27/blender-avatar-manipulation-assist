@@ -645,6 +645,7 @@ classes = (
         NTRZ_OT_vertgroup_manip_list_remove_duplicates,
         NTRZ_OT_vertgroup_manip_duplicate_and_rename,
         NTRZ_OT_vertgroup_manip_remove_zero_weight_vertgroup,
+        NTRZ_OT_vertgroup_manip_transfer_vertex_weight,
     )
 
 def register():

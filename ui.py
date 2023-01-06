@@ -234,7 +234,7 @@ class NTRZ_PT_vertgroup_manip(bpy.types.Panel):
             [TODO insert attributes]
     """
     bl_idname = 'NTRZ_PT_vertgroup_manip'
-    bl_label = 'Vertex Weight Manipulator'
+    bl_label = 'Vertex Group Manipulator'
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_category = 'NTRZ'
@@ -243,71 +243,92 @@ class NTRZ_PT_vertgroup_manip(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
-        #bulk add actions
-        col = layout.column()
-        row = col.row()
-        split = row.split(factor=0.2)
-        col = split.column()
-        col.label(text='By Index')
-        split = split.split()
-        row = split.row(align=True)
-        # row.alignment = 'RIGHT'
-        row.label(text='from: ')
-        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='TRACKING_BACKWARDS_SINGLE', text='').action = 'SET_START'
-        row.label(text=str(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index))
-        row.separator()
-        row.label(text='to: ')
-        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='TRACKING_FORWARDS_SINGLE', text='').action = 'SET_END'
-        row.label(text=str(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index))
-        row.separator()
-        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='ADD', text='').action = 'BULK_ADD_INDEXES'
-        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='BACK', text='').action = 'BULK_INSERT_INDEXES'
-
-        col = layout.column()
-        row = col.row()
-        split = row.split(factor=0.2)
-        col = split.column()
-        col.label(text='By PyRegEx')
-        split = split.split()
-        row = split.row(align=True)
-        # row = layout.row(align=True)
-        row.prop(scene.NTRZ_vertgroup_manip_settings, 'vertgroup_manip_regex', text='')
-        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='ADD', text='').action = 'BULK_ADD_REGEX'
-        row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='BACK', text='').action = 'BULK_INSERT_REGEX'
-
-        #vertgroup list
-        rows=2
+        #selection
         row = layout.row()
-        row.template_list('NTRZ_UL_vertgroup_list', '', scene, 'NTRZ_vertgroup_manip_list', scene, 'NTRZ_vertgroup_manip_list_index', rows=rows)
+        row.label(text='Vertex Group to Manipulate:')
+        box = layout.box()
+        row = box.row()
+        row.prop(scene.NTRZ_vertgroup_manip_settings, 'vertgroup_manip_selector', expand=True)
 
-        #vertgroup list actions
-        col = row.column(align=True)
-        col.operator('ntrz.vertgroup_manip_list_actions', icon='ADD', text='').action = 'ADD'
-        col.operator('ntrz.vertgroup_manip_list_actions', icon='BACK', text='').action = 'INSERT'
-        col.operator('ntrz.vertgroup_manip_list_actions', icon='REMOVE', text='').action = 'REMOVE'
-        col.separator()
-        col.operator('ntrz.vertgroup_manip_list_actions', icon='TRIA_UP', text='').action = 'UP'
-        col.operator('ntrz.vertgroup_manip_list_actions', icon='TRIA_DOWN', text='').action = 'DOWN'
-        col.separator()
-        col.operator('ntrz.vertgroup_manip_clear_list', icon='PANEL_CLOSE', text='')
+        # row = layout.row()
+        if scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'ALL':
+            pass
+        elif scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'INCLUSION' or scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'EXCLUSION':
+            #bulk add actions
+            box.separator()
+            col = box.column()
+            row = col.row()
+            split = row.split(factor=0.2)
+            col = split.column()
+            col.label(text='By Index')
+            split = split.split()
+            row = split.row(align=True)
+            # row.alignment = 'RIGHT'
+            row.label(text='from: ')
+            row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='TRACKING_BACKWARDS_SINGLE', text='').action = 'SET_START'
+            row.label(text=str(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index))
+            row.separator()
+            row.label(text='to: ')
+            row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='TRACKING_FORWARDS_SINGLE', text='').action = 'SET_END'
+            row.label(text=str(scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index))
+            row.separator()
+            row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='ADD', text='').action = 'BULK_ADD_INDEXES'
+            row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='BACK', text='').action = 'BULK_INSERT_INDEXES'
 
-        #actions on vertgroup list
+            col = box.column()
+            row = col.row()
+            split = row.split(factor=0.2)
+            col = split.column()
+            col.label(text='By PyRegEx')
+            split = split.split()
+            row = split.row(align=True)
+            # row = box.row(align=True)
+            row.prop(scene.NTRZ_vertgroup_manip_settings, 'vertgroup_manip_regex', text='')
+            row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='ADD', text='').action = 'BULK_ADD_REGEX'
+            row.operator('ntrz.vertgroup_manip_list_bulk_add_actions', icon='BACK', text='').action = 'BULK_INSERT_REGEX'
+
+            #vertgroup list
+            rows=2
+            row = box.row()
+            row.template_list('NTRZ_UL_vertgroup_list', '', scene, 'NTRZ_vertgroup_manip_list', scene, 'NTRZ_vertgroup_manip_list_index', rows=rows)
+
+            #vertgroup list actions
+            col = row.column(align=True)
+            col.operator('ntrz.vertgroup_manip_list_actions', icon='ADD', text='').action = 'ADD'
+            col.operator('ntrz.vertgroup_manip_list_actions', icon='BACK', text='').action = 'INSERT'
+            col.operator('ntrz.vertgroup_manip_list_actions', icon='REMOVE', text='').action = 'REMOVE'
+            col.separator()
+            col.operator('ntrz.vertgroup_manip_list_actions', icon='TRIA_UP', text='').action = 'UP'
+            col.operator('ntrz.vertgroup_manip_list_actions', icon='TRIA_DOWN', text='').action = 'DOWN'
+            col.separator()
+            col.operator('ntrz.vertgroup_manip_clear_list', icon='PANEL_CLOSE', text='')
+
+            #actions on vertgroup list
+            row = box.row()
+            row.operator('ntrz.vertgroup_manip_list_remove_duplicates', icon="FORCE_VORTEX")
+
         row = layout.row()
-        row.operator('ntrz.vertgroup_manip_list_remove_duplicates', icon="FORCE_VORTEX")
+        row.label(text='Actions:')
 
         #vertgroup duplicate and rename
-        row = layout.row()
+        box = layout.box()
+
+        row = box.row()
         row.separator()
         row.alignment = 'CENTER'
         row.prop(scene.NTRZ_vertgroup_manip_settings, 'vertgroup_manip_rename_prefix', text='')
         row.label(text='[NAME]')
         row.prop(scene.NTRZ_vertgroup_manip_settings, 'vertgroup_manip_rename_suffix', text='')
         
-        row=layout.row()
+        row=box.row()
         row.operator('ntrz.vertgroup_manip_duplicate_and_rename')
 
-        row=layout.row()
+
+        row = layout.row()
         row.operator('ntrz.vertgroup_manip_remove_zero_weight_vertgroup')
+
+        row = layout.row()
+        row.operator('ntrz.vertgroup_manip_transfer_vertex_weight')
 
 class NTRZ_UL_vertgroup_list(bpy.types.UIList):
     """displays UI List of vertex group to manipulate
