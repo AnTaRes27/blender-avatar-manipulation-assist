@@ -66,8 +66,15 @@ class NTRZ_PG_vertgroup_manip_list(bpy.types.PropertyGroup):
     index: bpy.props.IntProperty()
 
 def get_filtered_vgroups():
+    """ FUNC: returns a list of vertex groups already filtered
+    args:
+        > none
+    returns:
+        > list of filtered vertex groups
+    """
     context = bpy.context
     scene = context.scene
+
     if scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'ALL':
         vgroups = bpy.context.active_object.vertex_groups
     elif scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'INCLUSION':
@@ -82,7 +89,8 @@ def get_filtered_vgroups():
         for vgroup in bpy.context.active_object.vertex_groups:
             if vgroup.name not in blacklist:
                 vgroups.append(vgroup)
-    return vgroups
+
+    return vgroups #end get_filtered_vgroups()
 
 class NTRZ_OT_vertgroup_manip_list_bulk_add_actions(bpy.types.Operator):
     """ OPERATOR: holds actions related to bulk add vertex groups
