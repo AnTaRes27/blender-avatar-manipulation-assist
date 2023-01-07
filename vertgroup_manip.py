@@ -19,9 +19,9 @@ class NTRZ_PG_vertgroup_manip_settings(bpy.types.PropertyGroup):
     vertgroup_manip_selector: bpy.props.EnumProperty(
         name='Vertex Group to Manipulate',
         items=(
-            ('ALL', 'All', ''),
-            ('INCLUSION', 'Including Listed', ''),
-            ('EXCLUSION', 'Excluding Listed', '')
+            ('ALL', 'Everything', 'Manipulate all vertex groups'),
+            ('INCLUSION', 'Including Listed', 'Manipulate vertex groups listed below'),
+            ('EXCLUSION', 'Excluding Listed', 'Manipulate all vertex groups except ones listed below')
         )
     )
 
