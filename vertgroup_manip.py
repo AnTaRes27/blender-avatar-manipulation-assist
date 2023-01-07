@@ -19,7 +19,7 @@ class NTRZ_PG_vertgroup_manip_settings(bpy.types.PropertyGroup):
     vertgroup_manip_selector: bpy.props.EnumProperty(
         name='Vertex Group to Manipulate',
         items=(
-            ('ALL', 'Everything', 'Manipulate all vertex groups'),
+            ('ALL', 'All', 'Manipulate all vertex groups'),
             ('INCLUSION', 'Including Listed', 'Manipulate vertex groups listed below'),
             ('EXCLUSION', 'Excluding Listed', 'Manipulate all vertex groups except ones listed below')
         )
@@ -119,6 +119,41 @@ class NTRZ_OT_vertgroup_manip_list_bulk_add_actions(bpy.types.Operator):
         )
     )
 
+    @classmethod
+    def description(cls, context, properties):
+        scene = context.scene
+        
+        desc = ''
+        match properties.action:
+            case 'SET_START':
+                desc = 'Set bulk add starting from active vertex group'
+            case 'SET_END':
+                desc = 'Set bulk add going to active vertex group'
+            case 'BULK_ADD_INDEXES':
+                try:
+                    start_vertgroup_name = context.object.vertex_groups[scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index].name
+                    end_vertgroup_name = context.object.vertex_groups[scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index].name
+                except IndexError:
+                    desc = 'Add everything from the vertex group set with the left button to the vertex group set with the right button to the end of the list'
+                else:
+                    desc = 'Add everything from %s to %s to the end of the list' % (start_vertgroup_name, end_vertgroup_name)
+            case 'BULK_INSERT_INDEXES':
+                try:
+                    start_vertgroup_name = context.object.vertex_groups[scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_start_index].name
+                    end_vertgroup_name = context.object.vertex_groups[scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_end_index].name
+                except IndexError:
+                    desc = 'Insert everything from the vertex group set with the left button to just above the selected vertex group on the list'
+                else:
+                    desc = 'Insert everything from %s to %s to just above the selected vertex group on the list' % (start_vertgroup_name, end_vertgroup_name)
+            case 'BULK_ADD_REGEX':
+                desc = 'Add everything matching the python regex text to the end of the list'
+            case 'BULK_INSERT_REGEX':
+                desc = 'Insert everything matching the python regex text to just above the selected vertex group on the list'
+            case _:
+                desc = '???'
+
+        return desc
+
     def invoke(self, context, event):
         scene = context.scene
         index = scene.NTRZ_vertgroup_manip_list_index
@@ -207,6 +242,25 @@ class NTRZ_OT_vertgroup_manip_list_actions(bpy.types.Operator):
         )
     )
 
+    @classmethod
+    def description(cls, context, properties):
+        scene = context.scene
+        
+        desc = ''
+        match properties.action:
+            case 'UP':
+                desc = 'Move active selection up the list'
+            case 'DOWN':
+                desc = 'Move active selection down the list'
+            case 'REMOVE':
+                desc = 'Remove active selection from the list'
+            case 'ADD':
+                desc = 'Add the active vertex group to the end of the list'
+            case 'INSERT':
+                desc = 'Insert the active vertex group to just above the selected vertex group on the list'
+        
+        return desc
+
     def invoke(self, context, event):
         scene = context.scene
         index = scene.NTRZ_vertgroup_manip_list_index
@@ -258,7 +312,7 @@ class NTRZ_OT_vertgroup_manip_clear_list(bpy.types.Operator):
     """
     bl_idname = 'ntrz.vertgroup_manip_clear_list'
     bl_label = 'Clear List'
-    bl_description = ''
+    bl_description = 'Clear the list'
     bl_options = {"INTERNAL", "UNDO"}
 
     @classmethod
@@ -283,7 +337,7 @@ class NTRZ_OT_vertgroup_manip_list_remove_duplicates(bpy.types.Operator):
     """
     bl_idname = 'ntrz.vertgroup_manip_list_remove_duplicates'
     bl_label = 'Remove Duplicates'
-    bl_description = ''
+    bl_description = 'Remove any duplicates on the list'
     bl_options = {"INTERNAL", "UNDO"}
 
     def find_duplicates(self, context):
@@ -316,7 +370,7 @@ class NTRZ_OT_vertgroup_manip_duplicate_and_rename(bpy.types.Operator):
     """
     bl_idname = 'ntrz.vertgroup_manip_duplicate_and_rename'
     bl_label = 'Duplicate to New Name'
-    bl_description = ''
+    bl_description = 'Duplicate vertex groups into new vertex groups with the specified prefix and suffix applied'
     bl_options = {"INTERNAL", "UNDO"}
 
     def execute(self, context):
@@ -373,7 +427,7 @@ class NTRZ_OT_vertgroup_manip_remove_zero_weight_vertgroup(bpy.types.Operator):
     """
     bl_idname = 'ntrz.vertgroup_manip_remove_zero_weight_vertgroup'
     bl_label = 'Remove Zero Weight Vertex Groups'
-    bl_description = ''
+    bl_description = 'Remove vertex groups that has zero weight on all vertices'
     bl_options = {"INTERNAL", "UNDO"}
 
     def execute(self, context):
@@ -429,7 +483,7 @@ class NTRZ_OT_vertgroup_manip_transfer_vertex_weight(bpy.types.Operator):
     """
     bl_idname = 'ntrz.vertgroup_manip_transfer_vertex_weight'
     bl_label = 'Transfer Vertex Weight to Active Object'
-    bl_description = ''
+    bl_description = 'Transfer vertex weight from all selected meshes to the active mesh. Active mesh MUST be a joined version of all other selected meshes (ie meshes are identical in edit mode). Otherwise, transfered weights might be weird or not work at all.'
     bl_options = {"INTERNAL", "UNDO"}
 
     def execute(self, context):
