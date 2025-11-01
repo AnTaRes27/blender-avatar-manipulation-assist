@@ -28,6 +28,8 @@ from .ui import (
     NTRZ_UL_breathing_shapekey_list,
     NTRZ_PT_vertgroup_manip,
     NTRZ_UL_vertgroup_list,
+    NTRZ_PT_shapekey_housekeeping,
+    NTRZ_UL_blank_shapekey_list,
     NTRZ_PT_housekeeping
     )
 from .shapekey_manip import (
@@ -42,8 +44,13 @@ from .shapekey_manip import (
     NTRZ_OT_breathing_shapekey_list_actions,
     NTRZ_OT_breathing_shapekey_clear_list,
     NTRZ_OT_breathing_shapekey_transfer,
+    NTRZ_OT_list_blank_shapekeys,
+    NTRZ_OT_blank_shapekey_list_actions,
+    NTRZ_OT_blank_shapekey_clear_list,
+    NTRZ_OT_delete_listed_blank_shapekeys,
     NTRZ_PG_manip_shapekey_settings,
     NTRZ_PG_manip_shapekey_list,
+    NTRZ_PG_blank_shapekey_list,
     NTRZ_PG_breathing_assist,
     NTRZ_PG_breathing_shapekey_list
     )
@@ -115,6 +122,13 @@ classes = (
         NTRZ_OT_breathing_shapekey_list_actions,
         NTRZ_OT_breathing_shapekey_clear_list,
         NTRZ_OT_breathing_shapekey_transfer,
+        NTRZ_OT_list_blank_shapekeys,
+        NTRZ_OT_blank_shapekey_list_actions,
+        NTRZ_OT_blank_shapekey_clear_list,
+        NTRZ_OT_delete_listed_blank_shapekeys,
+        NTRZ_PT_shapekey_housekeeping,
+        NTRZ_PG_blank_shapekey_list,
+        NTRZ_UL_blank_shapekey_list,
         NTRZ_PT_housekeeping,
         NTRZ_OT_housekeeping_actions,
         NTRZ_PT_vertgroup_manip,
@@ -184,6 +198,17 @@ def register():
 
     Scene.NTRZ_shapekey_move_shapekey_list_index = IntProperty(
         name='Shapekey Move List Index'
+    )
+
+    Scene.NTRZ_blank_shapekey_target = PointerProperty(type=bpy.types.Object)
+
+    Scene.NTRZ_blank_shapekey_list = CollectionProperty(
+        name='Blank Shapekey List',
+        type=NTRZ_PG_blank_shapekey_list
+    )
+
+    Scene.NTRZ_blank_shapekey_list_index = IntProperty(
+        name='Blank Shapekey List Index'
     )
 
     Scene.NTRZ_breathing_assist = PointerProperty(

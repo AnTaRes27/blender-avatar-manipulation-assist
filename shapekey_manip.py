@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////"""
 
 import bpy
-
+import numpy as np
 
 class NTRZ_OT_add_shapekey(bpy.types.Operator):
     """OPERATOR: inserts spacekey into shapekey list
@@ -88,6 +88,9 @@ class NTRZ_OT_rename_shapekey(bpy.types.Operator):
         bpy.context.object.data.shape_keys.key_blocks[bpy.context.object.active_shape_key_index].name = shapekey_name
 
         return{'FINISHED'}
+
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
 
 class NTRZ_OT_manip_shapekey_list_bulk_add_actions(bpy.types.Operator):
     bl_idname = 'ntrz.manip_shapekey_list_bulk_add_actions'
@@ -357,6 +360,9 @@ class NTRZ_OT_manip_shapekey_actions(bpy.types.Operator):
                     pass
         return{'FINISHED'}
 
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
+
 class NTRZ_OT_breathing_shapekey_list_actions(bpy.types.Operator):
     bl_idname = 'ntrz.breathing_shapekey_list_actions'
     bl_label = 'Shapekey List Actions'
@@ -537,6 +543,169 @@ class NTRZ_OT_breathing_shapekey_transfer(bpy.types.Operator):
 
         return{"FINISHED"}
 
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
+
+
+class NTRZ_OT_blank_shapekey_list_actions(bpy.types.Operator):
+    bl_idname = 'ntrz.blank_shapekey_list_actions'
+    bl_label = 'Shapekey List Actions'
+    bl_description = ''
+    bl_options = {"REGISTER", "UNDO"}
+
+    action: bpy.props.EnumProperty(
+        items=(
+            ('UP', 'Up', ''),
+            ('DOWN', 'Down', ''),
+            ('REMOVE', 'Remove', ''),
+            ('ADD', 'Add', ''),
+            ('INSERT', 'Insert', '')
+        )
+    )
+
+    def invoke(self, context, event):
+        scene = context.scene
+        index = scene.NTRZ_blank_shapekey_list_index
+
+        try:
+            item = scene.NTRZ_blank_shapekey_list[index]
+        except IndexError:
+            pass
+        else:
+            if self.action == 'DOWN' and index < len(scene.NTRZ_blank_shapekey_list)-1:
+                scene.NTRZ_blank_shapekey_list.move(index, index+1)
+                scene.NTRZ_blank_shapekey_list_index += 1
+                info = 'Item "%s" moved to position %d' % (item.name, scene.NTRZ_blank_shapekey_list_index+1)
+                self.report({'INFO'}, info)
+            elif self.action == 'UP' and index >= 1:
+                scene.NTRZ_blank_shapekey_list.move(index, index-1)
+                scene.NTRZ_blank_shapekey_list_index -= 1
+                info = 'Item "%s" moved to position %d' % (item.name, scene.NTRZ_blank_shapekey_list_index+1)
+                self.report({'INFO'}, info)
+            elif self.action == 'REMOVE':
+                info = 'Item "%s" removed from list' % (scene.NTRZ_blank_shapekey_list[index].name)
+                scene.NTRZ_blank_shapekey_list.remove(index)
+                if index > 0:
+                    scene.NTRZ_blank_shapekey_list_index -= 1
+                else:
+                    scene.NTRZ_blank_shapekey_list_index = 0
+                self.report({'INFO'}, info)
+
+        if self.action == 'ADD' or self.action == 'INSERT':
+            if context.object.active_shape_key_index:
+                active_shapekey_index = context.object.active_shape_key_index
+                active_shapekey_name = context.object.data.shape_keys.key_blocks[active_shapekey_index].name
+                item = scene.NTRZ_blank_shapekey_list.add()
+                item.name = active_shapekey_name
+                item.obj_type = 'STRING'
+                item.obj_id = active_shapekey_index
+                if self.action == 'ADD':
+                    scene.NTRZ_blank_shapekey_list_index = len(scene.NTRZ_blank_shapekey_list)-1
+                else:
+                    scene.NTRZ_blank_shapekey_list.move(len(scene.NTRZ_blank_shapekey_list)-1, scene.NTRZ_blank_shapekey_list_index)
+                info = '"%s" added to list' % (active_shapekey_name)
+                self.report({'INFO'}, info)
+        return {'FINISHED'}
+
+class NTRZ_OT_blank_shapekey_clear_list(bpy.types.Operator):
+    bl_idname = 'ntrz.blank_shapekey_clear_list'
+    bl_label = 'Clear List'
+    bl_description = ''
+    bl_options = {"INTERNAL", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return bool(context.scene.NTRZ_blank_shapekey_list)
+
+    def invoke(self, context, event):
+        return context.window_manager.invoke_confirm(self, event)
+
+    def execute(self, context):
+        if bool(context.scene.NTRZ_blank_shapekey_list):
+            context.scene.NTRZ_blank_shapekey_list.clear()
+            self.report({'INFO'}, 'List cleared')
+        else:
+            self.report({'INFO'}, 'Nothing to clear')
+        return{'FINISHED'}
+
+class NTRZ_OT_list_blank_shapekeys(bpy.types.Operator):
+    # https://gist.github.com/Roliga/be24418d04d30c33fdfadf480f16d557
+    """Lists unused shapekeys on all selected objects"""
+    bl_idname = "ntrz.list_blank_shapekeys"
+    bl_label = "List Unused Shapekeys"
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        scene = context.scene
+
+        tolerance = 0.001
+
+        assert bpy.context.mode == "OBJECT", "Must be in object mode!"
+
+        if bool(context.scene.NTRZ_blank_shapekey_list):
+            context.scene.NTRZ_blank_shapekey_list.clear()
+
+        for ob in [scene.NTRZ_blank_shapekey_target]:
+        # for ob in bpy.context.selected_objects:
+            if ob.type != "MESH": continue
+            if not ob.data.shape_keys: continue
+            if not ob.data.shape_keys.use_relative: continue
+
+            kbs = ob.data.shape_keys.key_blocks
+            nverts = len(ob.data.vertices)
+            to_delete = []
+
+            cache = {}
+
+            locs = np.empty(3*nverts, dtype=np.float32)
+
+            for kb in kbs:
+                if kb == kb.relative_key: continue
+
+                kb.data.foreach_get("co", locs)
+
+                if kb.relative_key.name not in cache:
+                    rel_locs = np.empty(3*nverts, dtype=np.float32)
+                    kb.relative_key.data.foreach_get("co", rel_locs)
+                    cache[kb.relative_key.name] = rel_locs
+                rel_locs = cache[kb.relative_key.name]
+
+                locs -= rel_locs
+                if (np.abs(locs) < tolerance).all():
+                    to_delete.append(kb.name)
+
+            for kb_name in to_delete:
+                item = scene.NTRZ_blank_shapekey_list.add()
+                item.name = kb_name
+                item.obj_type = 'STRING'
+            #     ob.shape_key_remove(ob.data.shape_keys.key_blocks[kb_name])
+
+
+        return {"FINISHED"}
+
+class NTRZ_OT_delete_listed_blank_shapekeys(bpy.types.Operator):
+    bl_idname = "ntrz.delete_listed_blank_shapekeys"
+    bl_label = "Delete Listed Blank Shapekeys"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return bool(context.scene.NTRZ_blank_shapekey_list)
+    
+    def invoke(self, context, event):
+        return context.window_manager.invoke_confirm(self, event, message="THESE SHAPEKEYS WILL BE DELETED")
+
+    def execute(self, context):
+        scene = context.scene
+
+        for kb in scene.NTRZ_blank_shapekey_list:
+            scene.NTRZ_blank_shapekey_target.shape_key_remove(scene.NTRZ_blank_shapekey_target.data.shape_keys.key_blocks[kb.name])
+            self.report({'INFO'}, kb.name)
+
+        return{'FINISHED'}
+
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
 
 class NTRZ_PG_manip_shapekey_settings(bpy.types.PropertyGroup):
     shapekey_manip_start_index: bpy.props.IntProperty(
@@ -555,6 +724,10 @@ class NTRZ_PG_manip_shapekey_settings(bpy.types.PropertyGroup):
 
 class NTRZ_PG_manip_shapekey_list(bpy.types.PropertyGroup):
     #name: StringProperty() -> instantiated by default
+    obj_type: bpy.props.StringProperty()
+    obj_id: bpy.props.IntProperty()
+
+class NTRZ_PG_blank_shapekey_list(bpy.types.PropertyGroup):
     obj_type: bpy.props.StringProperty()
     obj_id: bpy.props.IntProperty()
 

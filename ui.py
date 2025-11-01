@@ -65,6 +65,7 @@ class NTRZ_PT_shapekey_manip(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
+        #by index
         col = layout.column()
         row = col.row()
         split = row.split(factor=0.2)
@@ -84,6 +85,7 @@ class NTRZ_PT_shapekey_manip(bpy.types.Panel):
         row.operator('ntrz.manip_shapekey_list_bulk_add_actions', icon='ADD', text='').action = 'BULK_ADD_INDEXES'
         row.operator('ntrz.manip_shapekey_list_bulk_add_actions', icon='BACK', text='').action = 'BULK_INSERT_INDEXES'
 
+        #by regex
         col = layout.column()
         row = col.row()
         split = row.split(factor=0.2)
@@ -96,6 +98,7 @@ class NTRZ_PT_shapekey_manip(bpy.types.Panel):
         row.operator('ntrz.manip_shapekey_list_bulk_add_actions', icon='ADD', text='').action = 'BULK_ADD_REGEX'
         row.operator('ntrz.manip_shapekey_list_bulk_add_actions', icon='BACK', text='').action = 'BULK_INSERT_REGEX'
 
+        #list
         rows=2
         row = layout.row()
         row.template_list('NTRZ_UL_shapekey_list', '', scene, 'NTRZ_shapekey_move_shapekey_list', scene, 'NTRZ_shapekey_move_shapekey_list_index', rows=rows)
@@ -110,6 +113,7 @@ class NTRZ_PT_shapekey_manip(bpy.types.Panel):
         col.separator()
         col.operator('ntrz.manip_shapeky_clear_list', icon='PANEL_CLOSE', text='')
 
+        #bottom operators
         row = layout.row()
         row.operator('ntrz.manip_shapekey_list_remove_duplicates', icon="FORCE_VORTEX")
 
@@ -140,6 +144,82 @@ class NTRZ_UL_shapekey_list(bpy.types.UIList):
         split.label(text=item.name)
         # split.enabled = False
         # layout.prop(item, 'name', text='', emboss=False, icon_value=icon)
+
+    def invoke(self, context, event):
+        pass
+
+#////////////////////////////////////////////////#
+#////////////////////////////////////////////////#
+
+class NTRZ_PT_shapekey_housekeeping(bpy.types.Panel):
+    """displays functions related to removing blank shapekeys
+    attr:
+            [TODO insert attributes]
+    """
+    bl_idname = 'NTRZ_PT_shapekey_housekeeping'
+    bl_label = 'Shapekey Housekeeping'
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_category = 'NTRZ'
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        #object picker
+        layout.prop_search(scene, "NTRZ_blank_shapekey_target", scene, "objects", text="Select Object")
+        
+
+        row = layout.row()
+        row.operator('ntrz.list_blank_shapekeys', icon='SHAPEKEY_DATA')
+
+
+        #list of blank shapekeys
+        rows = 1
+        row = layout.row()
+        row.template_list('NTRZ_UL_blank_shapekey_list', '', scene, 'NTRZ_blank_shapekey_list', scene, 'NTRZ_blank_shapekey_list_index', rows=rows)
+
+        col = row.column(align=True)
+        # col.operator('ntrz.blank_shapekey_list_actions', icon='ADD', text='').action = 'ADD'
+        # col.operator('ntrz.blank_shapekey_list_actions', icon='BACK', text='').action = 'INSERT'
+        col.operator('ntrz.blank_shapekey_list_actions', icon='REMOVE', text='').action = 'REMOVE'
+        # col.separator()
+        # col.operator('ntrz.blank_shapekey_list_actions', icon='TRIA_UP', text='').action = 'UP'
+        # col.operator('ntrz.blank_shapekey_list_actions', icon='TRIA_DOWN', text='').action = 'DOWN'
+        col.separator()
+        col.operator('ntrz.blank_shapekey_clear_list', icon='PANEL_CLOSE', text='')
+
+        #actions
+        row = layout.row()
+        row.alert = True
+        row.operator('ntrz.delete_listed_blank_shapekeys', icon='CANCEL', text="DELETE THESE SHAPEKEYS", )
+
+        row = layout.row()
+        row.label(text="ahoy")
+        # row.operator('')
+
+class NTRZ_UL_blank_shapekey_list(bpy.types.UIList):
+    """displays UI List of shapekeys to remove
+    attr:
+            [TODO insert attributes]
+    """
+    def draw_item(self, context, layout, data, item, icon, active_data, active_propname, index):
+        # if self.layout_type in {'DEFAULT', 'COMPACT'}:
+        #   split = layout.split(factor=0.3)
+        #   split.label(text="Index: %d" % (index))
+        #   split.label(text=item.name) #avoid renaming item by accident
+        # elif self.layout_type in {'GRID'}:
+        #   layout.alignment = 'CENTER'
+        #   layout.label(text='')
+        # split = layout.split(factor=0.2)
+        # split.prop(item, 'obj_id', text='', emboss=False, icon_value=icon)
+        # split.prop(item, 'name', text='', emboss=False, icon_value=icon)
+        # split.label(text=str(item.obj_id))
+        # split.label(text="A")
+        # split.label(text=item.name)
+        # split.enabled = False
+        # layout.prop(item, 'name', text='', emboss=False, icon_value=icon)
+        layout.label(text=item.name)
 
     def invoke(self, context, event):
         pass
@@ -334,7 +414,6 @@ class NTRZ_UL_vertgroup_list(bpy.types.UIList):
 
     def invoke(self, context, event):
         pass
-
 
 #////////////////////////////////////////////////#
 #////////////////////////////////////////////////#
