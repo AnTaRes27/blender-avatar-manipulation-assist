@@ -9,25 +9,6 @@
 import bpy
 
 #////////////////////////////////////////////////#
-
-class TestPanel(bpy.types.Panel):
-    bl_idname = 'PT_TestPanel'
-    bl_label = 'TestPanel'
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = 'NTRZ'
-        
-    def draw(self, context):
-        layout = self.layout
-
-        row = layout.row()
-        row.label(text='TestText', icon='CUBE')
-        
-        
-        row = layout.row()
-        row.operator('ntrz.unload')
-
-
 #////////////////////////////////////////////////#
 
 class NTRZ_PT_shapekey_insert(bpy.types.Panel):

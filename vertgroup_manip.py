@@ -498,3 +498,26 @@ class NTRZ_OT_vertgroup_manip_transfer_vertex_weight(bpy.types.Operator):
             self.report({'INFO'}, info)
 
         return {'FINISHED'}
+
+class NTRZ_OT_vertgroup_manip_project_vertex_weight(bpy.types.Operator):
+    """ OPERATOR: projects vertex weights from all selected object to active object
+    attr:
+        > None
+    """
+    bl_idname = 'ntrz.vertgroup_manip_project_vertex_weight'
+    bl_label = 'Project Vertex Weight to Active Object'
+    bl_description = 'Projects vertex weight from all selected meshes to the active mesh. Active mesh MUST be a joined version of all other selected meshes (ie meshes are identical in edit mode). Otherwise, transfered weights might be weird or not work at all.'
+    bl_options = {"INTERNAL", "UNDO"}
+
+    def execute(self, context):
+        scene = context.scene
+
+        if scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'ALL':
+            bpy.ops.object.data_transfer(use_reverse_transfer=True, data_type='VGROUP_WEIGHTS', layers_select_src='NAME', layers_select_dst='ALL')
+        elif scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'INCLUSION' or scene.NTRZ_vertgroup_manip_settings.vertgroup_manip_selector == 'EXCLUSION':
+            vgroups = get_filtered_vgroups()
+            info = 'Filtered vertex weight transfer is unsupported at the moment.'
+            print(info, end='\n\n')
+            self.report({'INFO'}, info)
+
+        return {'FINISHED'}
